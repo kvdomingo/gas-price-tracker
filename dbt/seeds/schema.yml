@@ -1,0 +1,29 @@
+version: 2
+
+seeds:
+  - name: psgc_boundaries
+    description: Philippine Standard Geographic Code (PSGC) admin boundary reference data
+    columns:
+      - name: psgc_code
+        description: 9-digit PSGC code (canonical location identifier)
+        data_tests:
+          - unique
+          - not_null
+      - name: name
+        description: Official PSGC name for the admin boundary
+        data_tests:
+          - not_null
+      - name: region_code
+        description: PSGC code of the parent region
+        data_tests:
+          - not_null
+      - name: level
+        description: Admin level (Reg, Prov, City, Mun, SubMun)
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["Reg", "Prov", "City", "Mun", "SubMun"]
+      - name: alternative_names
+        description: Comma-separated alternative name variants as they may appear in DOE documents
+      - name: geometry_wkt
+        description: MultiPolygon boundary in WKT format (EPSG:4326); NULL if not yet sourced

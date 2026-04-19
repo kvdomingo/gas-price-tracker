@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: price_records
+    description: Golden table of validated fuel price records keyed by PSGC code
+    config:
+      contract:
+        enforced: false
+    columns:
+      - name: id
+        description: Surrogate key derived from (effective_date, psgc_code, fuel_type)
+        data_tests:
+          - unique
+          - not_null
+      - name: effective_date
+        description: Date the price was effective (from DOE publication)
+        data_tests:
+          - not_null
+      - name: psgc_code
+        description: PSGC code for the city/municipality; NULL if unresolved
+      - name: fuel_type
+        description: Fuel type string (e.g. diesel, gasoline, kerosene)
+        data_tests:
+          - not_null
+      - name: price_php_per_liter
+        description: Retail pump price in PHP per litre
+        data_tests:
+          - not_null
+      - name: source_document_id
+        description: FK to the source_documents raw table entry
+        data_tests:
+          - not_null
+      - name: raw_location
+        description: Original location string from the DOE document before PSGC resolution
+      - name: ingested_at
+        description: Timestamp when the record was written to the mart
+        data_tests:
+          - not_null

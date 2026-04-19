@@ -1,0 +1,49 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: public
+    description: Raw tables written directly by Dagster ingestion assets
+    tables:
+      - name: source_documents
+        description: Metadata for each downloaded DOE PDF document
+        columns:
+          - name: id
+            data_tests:
+              - unique
+              - not_null
+          - name: url
+            data_tests:
+              - not_null
+          - name: local_path
+          - name: content_hash
+          - name: status
+            data_tests:
+              - accepted_values:
+                  values:
+                    [
+                      "downloaded",
+                      "extracted",
+                      "extraction_failed",
+                      "download_failed",
+                      "validation_error",
+                    ]
+          - name: downloaded_at
+          - name: publication_date
+
+      - name: raw_extraction_results
+        description: Raw Gemini AI extraction output per source document
+        columns:
+          - name: id
+            data_tests:
+              - unique
+              - not_null
+          - name: source_document_id
+            data_tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'source_documents')
+                  field: id
+          - name: raw_output
+            description: Raw JSON array string returned by Gemini
+          - name: extracted_at

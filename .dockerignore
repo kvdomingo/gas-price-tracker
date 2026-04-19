@@ -184,5 +184,3 @@ dbt/logs/
 
 # local data
 data/
-
-.tmp*/

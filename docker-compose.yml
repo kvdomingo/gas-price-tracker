@@ -1,0 +1,76 @@
+volumes:
+  db-data:
+  pdf-data:
+  venv-data:
+
+x-common-env: &common-env
+  DATABASE_URL: postgresql://gas_price_tracker:gas_price_tracker@db:5432/gas_price_tracker
+  PDF_STORAGE_PATH: /app/data/pdfs
+  GEMINI_API_KEY: ${GEMINI_API_KEY}
+  DAGSTER_HOME: /opt/dagster
+  POSTGRES_DB: gas_price_tracker
+  POSTGRES_USER: gas_price_tracker
+  POSTGRES_PASSWORD: gas_price_tracker
+  POSTGRES_HOST: db
+  POSTGRES_PORT: 5432
+
+services:
+  db:
+    image: ghcr.io/kvdomingo/postgresql-pig:18
+    environment:
+      <<: *common-env
+    volumes:
+      - db-data:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gas_price_tracker -d gas_price_tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dagster:
+    build: .
+    image: ghcr.io/kvdomingo/gas-price-tracker:latest
+    environment:
+      <<: *common-env
+    command:
+      - -c
+      - exec uv run dg dev -p 3030 -h 0.0.0.0 -w dagster_pipeline/workspace.yaml
+    volumes:
+      - pdf-data:/app/data/pdfs
+      - venv-data:/app/.venv
+      - ./dagster_pipeline/dagster.yaml:/opt/dagster/dagster.yaml
+      - .:/app
+    ports:
+      - "3030:3030"
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  api:
+    build: .
+    image: ghcr.io/kvdomingo/gas-price-tracker:latest
+    environment:
+      <<: *common-env
+    command:
+      - -c
+      - |
+        uv sync --frozen --dev
+        exec uv run fastapi dev --host 0.0.0.0 --port 8000 api/main.py
+    volumes:
+      - pdf-data:/app/data/pdfs
+      - venv-data:/app/.venv
+      - .:/app
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      db:
+        condition: service_healthy

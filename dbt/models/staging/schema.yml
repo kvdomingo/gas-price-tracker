@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: stg_extraction_results
+    description: Cleaned and normalised extraction records from raw Gemini AI output
+    columns:
+      - name: id
+        description: Source extraction result ID
+        data_tests:
+          - not_null
+      - name: source_document_id
+        data_tests:
+          - not_null
+      - name: fuel_type
+        data_tests:
+          - not_null
+      - name: price_php_per_liter
+        data_tests:
+          - not_null
+      - name: location_string
+        data_tests:
+          - not_null
+      - name: effective_date
+        data_tests:
+          - not_null

@@ -1,0 +1,38 @@
+[project]
+name = "gas-price-tracker"
+version = "0.1.0"
+requires-python = "==3.12.*"
+dependencies = [
+    "beautifulsoup4>=4.13",
+    "curl-cffi>=0.11",
+    "dagster>=1.10",
+    "dagster-dbt>=0.26",
+    "dagster-webserver>=1.10",
+    "dbt-postgres>=1.9",
+    "fastapi[standard]>=0.115",
+    "google-genai>=1.10",
+    "pdf2image>=1.17",
+    "pdfplumber>=0.11",
+    "pillow>=11.2",
+    "psycopg2-binary>=2.9",
+    "pydantic-settings>=2.9",
+    "pytesseract>=0.3",
+    "scalar-fastapi>=1.0",
+    "sqlalchemy>=2.0",
+    "sqlacodegen>=3.0",
+    "dagster-postgres>=0.29.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.26",
+    "httpx>=0.28",
+    "ruff>=0.15.11",
+    "ty>=0.0.31",
+    "dagster-dg-cli>=1.13.1",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88

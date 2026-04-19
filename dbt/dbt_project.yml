@@ -1,0 +1,31 @@
+name: "gas_price_tracker"
+version: "1.0.0"
+
+profile: "gas_price_tracker"
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+seeds:
+  gas_price_tracker:
+    +schema: reference
+
+models:
+  gas_price_tracker:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    mart:
+      +materialized: table
+      +schema: mart

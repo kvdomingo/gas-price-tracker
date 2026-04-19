@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: int_price_records_resolved
+    description: Extraction results with PSGC codes resolved and price range validation flag
+    columns:
+      - name: extraction_result_id
+        data_tests:
+          - not_null
+      - name: source_document_id
+        data_tests:
+          - not_null
+      - name: effective_date
+        data_tests:
+          - not_null
+      - name: fuel_type
+        data_tests:
+          - not_null
+      - name: price_php_per_liter
+        data_tests:
+          - not_null
+      - name: price_in_range
+        description: True if price is within the plausible range (10-500 PHP/L)
+        data_tests:
+          - not_null

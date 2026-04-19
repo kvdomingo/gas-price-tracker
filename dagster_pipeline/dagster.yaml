@@ -1,0 +1,41 @@
+telemetry:
+  enabled: false
+
+storage:
+  postgres:
+    postgres_db:
+      username: gas_price_tracker
+      password: gas_price_tracker
+      db_name: gas_price_tracker
+      hostname: db
+      port: 5432
+
+run_launcher:
+  module: dagster.core.launcher
+  class: DefaultRunLauncher
+
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+  config:
+    max_concurrent_runs: 1
+
+compute_logs:
+  module: dagster.core.storage.local_compute_log_manager
+  class: LocalComputeLogManager
+  config:
+    base_dir: /opt/dagster/storage
+
+local_artifact_storage:
+  module: dagster.core.storage.root
+  class: LocalArtifactStorage
+  config:
+    base_dir: /opt/dagster/artifacts
+
+sensors:
+  use_threads: true
+  num_workers: 2
+
+schedules:
+  use_threads: true
+  num_workers: 2
