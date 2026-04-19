@@ -1,0 +1,10 @@
+[global]
+disable = ["MD033"]
+
+exclude = [
+    ".cursor/**",
+    ".claude/**",
+]
+
+[MD013]
+reflow = true

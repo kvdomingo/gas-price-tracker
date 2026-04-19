@@ -1,0 +1,49 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.6
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+        types_or: [ python, pyi ]
+      - id: ruff-format
+        types_or: [ python, pyi ]
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 3.4.0
+    hooks:
+      - id: sqlfluff-lint
+      - id: sqlfluff-fix
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: [ "--maxkb=500" ]
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [ "--fix=lf" ]
+      - id: trailing-whitespace
+      - id: check-shebang-scripts-are-executable
+      - id: check-symlinks
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-yaml
+        args: [ "--allow-multiple-documents" ]
+      - id: check-toml
+      - id: check-xml
+  - repo: https://github.com/zricethezav/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+        args: [ "--verbose" ]
+  - repo: https://github.com/rvben/rumdl-pre-commit
+    rev: v0.1.59
+    hooks:
+      - id: rumdl-fmt
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args:
+          - --ignore
+          - DL3008
+          - --ignore
+          - DL3018
