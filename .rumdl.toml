@@ -8,3 +8,4 @@ exclude = [
 
 [MD013]
 reflow = true
+code_blocks = false

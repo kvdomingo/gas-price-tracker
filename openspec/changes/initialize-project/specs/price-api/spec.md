@@ -9,7 +9,7 @@ price for each fuel type in a given region.
 
 #### Scenario: Latest NCR prices requested
 
-- **WHEN** a client sends `GET /prices/latest?region=NCR`
+- **WHEN** a client sends `GET /prices/latest?region=130000000` (NCR PSGC code)
 - **THEN** the API SHALL return a JSON list of the most recent price record per
   fuel type for NCR, including `fuel_type`, `price_php_per_liter`,
   `effective_date`, and `region`
@@ -27,7 +27,7 @@ specified date range, filterable by region and fuel type.
 #### Scenario: Date range query with fuel type filter
 
 - **WHEN** a client sends
-  `GET /prices?region=NCR&fuel_type=diesel&from=2025-01-01&to=2025-03-31`
+  `GET /prices?region=130000000&fuel_type=diesel&from=2025-01-01&to=2025-03-31`
 - **THEN** the API SHALL return all matching price records ordered by
   `effective_date` ascending
 

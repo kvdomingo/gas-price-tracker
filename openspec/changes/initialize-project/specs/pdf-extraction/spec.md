@@ -60,17 +60,17 @@ interpretation.
 ### Requirement: AI-assisted structured interpretation
 
 The system SHALL use the Gemini API to interpret raw extracted content (text or
-image) into a canonical structured list of price records. Claude SHALL be
+image) into a canonical structured list of price records. Gemini SHALL be
 prompted to return a JSON array of price objects with defined fields.
 
-#### Scenario: Claude returns well-formed structured output
+#### Scenario: Gemini returns well-formed structured output
 
 - **WHEN** Gemini is invoked with the extracted content and returns a valid JSON
   array of price records
 - **THEN** the system SHALL parse the response and pass the records to the
   validation layer
 
-#### Scenario: Claude returns empty or unparseable output
+#### Scenario: Gemini returns empty or unparseable output
 
 - **WHEN** Gemini is invoked but returns an empty array or output that cannot be
   parsed as JSON
@@ -85,7 +85,7 @@ prompted to return a JSON array of price objects with defined fields.
 
 ### Requirement: Cache AI extraction results
 
-The system SHALL cache Claude's structured output keyed by the source document's
+The system SHALL cache Gemini's structured output keyed by the source document's
 content hash, so that re-processing an unchanged document does not incur an
 additional API call.
 

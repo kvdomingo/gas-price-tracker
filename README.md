@@ -54,10 +54,16 @@ infisical login
 infisical run -- docker compose up -d
 ```
 
-Apply database migrations:
+Apply all schemas and seed reference data (runs dbt):
 
 ```bash
-infisical run -- docker compose exec api alembic upgrade head
+infisical run -- docker compose exec dagster-daemon dagster asset materialize --select dbt_assets
+```
+
+Regenerate SQLAlchemy ORM models from the live schema:
+
+```bash
+infisical run -- docker compose exec api sqlacodegen postgresql://... --outfile storage/models.py
 ```
 
 Seed PSGC boundary data:

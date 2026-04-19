@@ -117,30 +117,35 @@ a map UI or spatial queries are added later.
 - Store geometries only when needed: forces a costly retroactive data fetch
   and migration
 
-### 5. Schema management: dbt for pipeline tables, Alembic for golden/API tables
+### 5. Schema management: dbt owns all schemas; sqlacodegen generates API ORM models
 
-**Decision**: Split schema ownership between two tools:
+**Decision**: dbt is the single source of truth for all database schemas —
+seeds, staging, intermediate, and mart (golden) tables alike. No Alembic.
+The FastAPI service does not hand-write SQLAlchemy ORM models; instead,
+`sqlacodegen` introspects the live database after `dbt run` and generates
+them automatically.
 
-- **dbt** (via `dagster-dbt`) manages all pipeline-internal tables: raw
-  ingestion staging, intermediate extraction results, and the `psgc_boundaries`
-  reference seed. These schemas are defined as dbt models/seeds and materialized
-  by Dagster as assets.
-- **Alembic** manages only the golden tables consumed by the FastAPI service
-  (i.e., `price_records` and any API-specific views). Alembic migrations are
-  applied as a deployment step before the API starts.
+**Write path**:
 
-**Rationale**: dbt is the natural owner of transformation logic and its schemas.
-Coupling intermediate table shapes to Alembic migrations creates unnecessary
-churn during pipeline iteration. Alembic is reserved for the stable, public
-contract that the API exposes — changes there are infrequent and warrant the
-formalism of versioned migrations.
+```text
+Dagster ingestion assets → raw source tables
+  → dbt staging/intermediate models → dbt mart (price_records, table materialization)
+  → sqlacodegen → SQLAlchemy models → FastAPI reads
+```
+
+**Rationale**: A single schema owner eliminates the synchronisation problem
+between Alembic migrations and dbt models. `sqlacodegen` keeps ORM models
+accurate with zero manual upkeep — regenerate after any dbt schema change
+and commit the result. dbt's incremental materialization with a unique key on
+`(effective_date, psgc_code, fuel_type)` provides idempotent upserts without
+Alembic involvement.
 
 **Alternatives considered**:
 
-- Alembic for everything: tight coupling between pipeline iteration and
-  migration history; makes rapid schema experimentation slow
-- dbt for everything including golden tables: the API layer then has no
-  migration safety net for its schema contract
+- Alembic for golden tables: adds a second schema owner, requires keeping
+  Alembic and dbt in sync for the same table
+- Hand-written SQLAlchemy models: drift risk whenever dbt schema changes;
+  `sqlacodegen` eliminates this entirely
 
 ### 6. Data store: PostgreSQL (TimescaleDB + PostGIS migration path)
 
@@ -225,14 +230,16 @@ This is a greenfield project; no migration from existing systems is required.
 Deployment steps:
 
 1. Build and push Docker images
-2. Start PostgreSQL via Docker Compose and apply Alembic migrations
-3. Start Dagster webserver and daemon
-4. Trigger historical backfill (December 2020 → present) via Dagster UI
-5. Confirm records appear in database and API responds correctly
-6. Enable the weekly Dagster schedule for ongoing ingestion
+2. Start PostgreSQL via Docker Compose
+3. Run `dbt run` (via Dagster or CLI) to materialise all schemas including the
+   `price_records` mart table
+4. Start Dagster webserver and daemon
+5. Trigger historical backfill (December 2020 → present) via Dagster UI
+6. Confirm records appear in database and API responds correctly
+7. Enable the weekly Dagster schedule for ongoing ingestion
 
 Rollback: all services are stateless containers; roll back to a previous image
-tag. Database schema changes use versioned Alembic migrations.
+tag. Schema changes are managed through dbt model changes.
 
 ## Resolved Questions
 
