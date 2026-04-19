@@ -53,6 +53,31 @@ for the price API.
 - **THEN** the server SHALL return the generated OpenAPI documentation without
   authentication
 
+### Requirement: Optional API key authentication
+
+The API SHALL be publicly accessible without authentication in the POC. The
+middleware layer SHALL accept an optional `Authorization: Bearer <key>` header
+so that API key enforcement can be enabled for rate-limiting in production
+without a breaking change to existing unauthenticated clients.
+
+#### Scenario: Request without API key (POC mode)
+
+- **WHEN** a client sends a request with no `Authorization` header and the
+  service is configured with authentication disabled
+- **THEN** the API SHALL process the request normally
+
+#### Scenario: Request with valid API key (production mode)
+
+- **WHEN** a client sends a request with a valid `Authorization: Bearer <key>`
+  header and the service is configured with authentication enabled
+- **THEN** the API SHALL process the request normally
+
+#### Scenario: Request with invalid API key (production mode)
+
+- **WHEN** a client sends a request with an unrecognised or malformed
+  `Authorization` header and authentication is enabled
+- **THEN** the API SHALL return HTTP 401
+
 ### Requirement: Health check endpoint
 
 The system SHALL expose a health check endpoint for liveness probing.

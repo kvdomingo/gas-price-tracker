@@ -13,7 +13,7 @@ impossible without additional tooling.
 
 - Introduce a Dagster-orchestrated pipeline that discovers, downloads, and
   extracts structured price data from weekly DOE PDF publications
-- Use Claude AI to interpret extracted PDF content into structured records,
+- Use Gemini AI to interpret extracted PDF content into structured records,
   handling layout variability and OCR noise
 - Store cleaned records keyed by PSGC admin boundary codes in PostgreSQL for
   stable, region-consistent querying
@@ -30,7 +30,7 @@ impossible without additional tooling.
   from the DOE website using curl-cffi with polite scraping behavior
 - `pdf-extraction`: Extracts and interprets tabular price data from PDFs using a
   two-pass strategy (pdfplumber for digital PDFs, Tesseract OCR for scanned
-  PDFs) with Claude AI for structured interpretation
+  PDFs) with Gemini AI for structured interpretation
 - `price-storage`: Stores validated fuel price records keyed by PSGC codes in
   PostgreSQL, with idempotent upserts and document status tracking
 - `price-api`: Exposes a FastAPI + Scalar API for querying current and
@@ -41,8 +41,8 @@ impossible without additional tooling.
 ## Impact
 
 - No existing code is affected; this is a greenfield project
-- External dependencies: DOE public website (scraping), Anthropic API (AI
-  extraction)
+- External dependencies: DOE public website (scraping), Google Generative AI API
+  (AI extraction)
 - Requires Docker for all services (PostgreSQL, Dagster, FastAPI)
 - PSGC code lookup table required for location normalization; must be seeded
   before ingestion runs

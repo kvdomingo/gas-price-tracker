@@ -58,26 +58,26 @@ cron.
 - Prefect: comparable to Dagster; Dagster's asset model fits the DOE ingestion
   flow more naturally
 
-### 2. PDF extraction strategy: pdfplumber + Tesseract OCR + Claude AI interpretation
+### 2. PDF extraction strategy: pdfplumber + Tesseract OCR + Gemini AI interpretation
 
 **Decision**: Use `pdfplumber` for digital PDFs. For image-scanned PDFs, render
 pages to images and run Tesseract OCR. For both paths, pass the raw extracted
-text (or page image for scanned PDFs) to Claude (via Anthropic API) to interpret
-and return a structured price table as JSON.
+text (or page image for scanned PDFs) to Gemini (via Google Generative AI SDK)
+to interpret and return a structured price table as JSON.
 
 **Rationale**: The DOE table layout varies across publications and officers. A
-rigid regex/column-index parser breaks on any layout change. Using Claude as the
+rigid regex/column-index parser breaks on any layout change. Using Gemini as the
 interpretation layer handles layout variation, OCR noise, and header ambiguity
-without requiring per-publication rule updates. Claude receives either the
+without requiring per-publication rule updates. Gemini receives either the
 extracted text (digital path) or the page image (scanned path) and returns a
 canonical JSON array of price records.
 
 **Alternatives considered**:
 
 - Pure regex/column-index parser: brittle against layout changes and OCR noise
-- Google Cloud Vision API for OCR: higher cost, external data dependency
-- Structured output prompt with GPT-4o: viable but adds an OpenAI dependency
-  when Anthropic is preferred
+- Claude (Anthropic API): viable multimodal option but Google ecosystem is
+  preferred given Gemini's strong document understanding capabilities
+- Structured output prompt with GPT-4o: adds an OpenAI dependency
 
 ### 3. HTTP client: curl-cffi with rate limiting and robots.txt compliance
 
@@ -96,35 +96,72 @@ polite behavior (delays, backoff, robots.txt) is the correct default regardless.
 - Playwright/Selenium: too heavy for a site that appears to be server-rendered
   HTML
 
-### 4. Region and city identifiers: PSGC codes
+### 4. Region and city identifiers: PSGC codes with admin boundary geometries
 
-**Decision**: Use Philippine Standard Geographic Code (PSGC) codes as the
-canonical identifiers for regions and cities in the database schema and API.
+**Decision**: Use PSGC codes as canonical location identifiers and seed the
+`psgc_boundaries` table with both metadata and GeoJSON/WKT admin boundary
+geometries sourced from the PSA's official PSGC dataset or an equivalent open
+boundary dataset (e.g., GADM, geoBoundaries).
 
 **Rationale**: DOE publications inconsistently name locations (e.g., "Makati
-City" vs. "City of Makati"). PSGC codes are stable government identifiers that
-decouple storage from naming variability. A lookup table maps PSGC codes to
-display names; the extraction step resolves location strings to PSGC codes
-before storage.
+City" vs. "City of Makati"). PSGC codes decouple storage from naming
+variability. Storing boundary geometries now — even as plain `text`/`jsonb`
+in the POC — costs nothing extra at seed time and avoids a data backfill when
+a map UI or spatial queries are added later.
 
 **Alternatives considered**:
 
-- Store raw name strings: cheap to implement but creates duplicate/inconsistent
-  records
+- Store raw name strings: cheap but creates duplicate/inconsistent records
 - Normalize to a fixed naming convention: fragile against future DOE formatting
   changes
+- Store geometries only when needed: forces a costly retroactive data fetch
+  and migration
 
-### 5. Data store: PostgreSQL (`ghcr.io/kvdomingo/postgresql-pig:18`)
+### 5. Schema management: dbt for pipeline tables, Alembic for golden/API tables
+
+**Decision**: Split schema ownership between two tools:
+
+- **dbt** (via `dagster-dbt`) manages all pipeline-internal tables: raw
+  ingestion staging, intermediate extraction results, and the `psgc_boundaries`
+  reference seed. These schemas are defined as dbt models/seeds and materialized
+  by Dagster as assets.
+- **Alembic** manages only the golden tables consumed by the FastAPI service
+  (i.e., `price_records` and any API-specific views). Alembic migrations are
+  applied as a deployment step before the API starts.
+
+**Rationale**: dbt is the natural owner of transformation logic and its schemas.
+Coupling intermediate table shapes to Alembic migrations creates unnecessary
+churn during pipeline iteration. Alembic is reserved for the stable, public
+contract that the API exposes — changes there are infrequent and warrant the
+formalism of versioned migrations.
+
+**Alternatives considered**:
+
+- Alembic for everything: tight coupling between pipeline iteration and
+  migration history; makes rapid schema experimentation slow
+- dbt for everything including golden tables: the API layer then has no
+  migration safety net for its schema contract
+
+### 6. Data store: PostgreSQL (TimescaleDB + PostGIS migration path)
 
 **Decision**: Use the custom `ghcr.io/kvdomingo/postgresql-pig:18` PostgreSQL
-image. Schema managed with Alembic. No TimescaleDB for POC.
+image. No TimescaleDB or PostGIS extensions in the POC, but the schema is
+explicitly designed to enable both without breaking changes:
 
-**Rationale**: Plain PostgreSQL with a date-indexed table is sufficient at this
-data volume (weekly NCR data, ~52 rows/year per fuel type, with ~5 years of
-history for backfill). The custom image is already available and familiar.
-TimescaleDB can be adopted later if query performance warrants it.
+- `price_records.effective_date` is the natural time-series dimension; the
+  table can be converted to a TimescaleDB hypertable partitioned on this column
+  with a single `create_hypertable()` call
+- `psgc_boundaries.geometry_wkt` is stored as `text` (WKT) in the POC; the
+  column can be migrated to PostGIS `geometry(MultiPolygon, 4326)` by enabling
+  the extension and running `ALTER COLUMN … TYPE geometry USING
+  ST_GeomFromText(…)`
 
-### 6. API: FastAPI + Scalar
+**Rationale**: Plain PostgreSQL is sufficient for POC volume. Storing geometry
+as WKT text now means no re-seeding is required when PostGIS is enabled. The
+TimescaleDB migration path is trivial if query latency becomes a concern at
+nationwide scale.
+
+### 7. API: FastAPI + Scalar
 
 **Decision**: Use FastAPI with Pydantic v2 models. Replace the default Swagger
 UI with Scalar for API documentation.
@@ -134,7 +171,23 @@ support, and type-safe models with minimal boilerplate. Scalar is a modern
 drop-in replacement for Swagger UI with better UX and no additional backend
 changes needed.
 
-### 7. Containerization: Docker Compose
+### 8. Secret management: Infisical
+
+**Decision**: Use Infisical for all secret management. Secrets are injected at
+runtime via `infisical run --` and never stored in `.env` files or the
+repository.
+
+**Rationale**: Centralised secret management with audit trails and
+per-environment scoping (dev/prod) without committing credentials or maintaining
+`.env` files. The Infisical CLI integrates cleanly with Docker Compose via the
+`infisical run --` prefix.
+
+**Alternatives considered**:
+
+- `.env` files: simple but leak risk, no audit trail, per-developer drift
+- Docker secrets: suited for Swarm/Kubernetes, not bare Compose
+
+### 9. Containerization: Docker Compose
 
 **Decision**: Define all services (PostgreSQL, Dagster webserver, Dagster
 daemon, FastAPI) in a `docker-compose.yml`.
@@ -148,13 +201,13 @@ way to manage these alongside the database.
 - **DOE site structure changes** → Scraper breaks if article listing HTML
   changes. Mitigation: store raw HTML alongside downloads; alert if zero new
   documents are found after a run.
-- **AI interpretation cost and latency** → Each PDF page sent to Claude incurs
+- **AI interpretation cost and latency** → Each PDF page sent to Gemini incurs
   API cost and adds latency to the pipeline. Mitigation: cache extraction
   results against the source document hash; only re-run AI interpretation if the
   document changes.
 - **OCR quality on degraded scans** → Old scanned PDFs may produce garbled text
   that confuses the AI. Mitigation: store the raw OCR text alongside the AI
-  output; flag records where Claude returns low-confidence or empty results for
+  output; flag records where Gemini returns low-confidence or empty results for
   manual review.
 - **PSGC code mapping coverage** → Some DOE location strings may not map cleanly
   to a PSGC code. Mitigation: store the raw location string alongside the
@@ -181,8 +234,11 @@ Deployment steps:
 Rollback: all services are stateless containers; roll back to a previous image
 tag. Database schema changes use versioned Alembic migrations.
 
-## Open Questions
+## Resolved Questions
 
-- Should the API be key-protected or open for the POC?
-- Do any historical DOE PDFs (pre-2022) require a login or are all publicly
-  accessible?
+- **API authentication**: The API is open (no key required) for the POC. The
+  FastAPI middleware layer SHALL be designed to accept an optional
+  `Authorization` header so API key enforcement can be added for rate-limiting
+  in production without a breaking change to existing clients.
+- **Historical DOE data access**: All historical publications (back to December
+  2020) are publicly accessible without authentication.

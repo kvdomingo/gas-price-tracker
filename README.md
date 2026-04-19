@@ -35,40 +35,42 @@ designed for nationwide expansion.
 | Orchestration | Dagster |
 | HTTP | curl-cffi |
 | PDF extraction | pdfplumber + Tesseract OCR |
-| AI interpretation | Claude API (Anthropic) |
+| AI interpretation | Gemini API (Google) |
 | Database | PostgreSQL (`ghcr.io/kvdomingo/postgresql-pig:18`) |
 | API | FastAPI + Scalar |
+| Secrets | Infisical |
 | Infrastructure | Docker Compose |
 | Hooks | Prek |
 
 ## Getting Started
 
-> Prerequisites: Docker, Docker Compose, and a valid `ANTHROPIC_API_KEY`.
+> Prerequisites: Docker, Docker Compose, and access to the project's Infisical
+> workspace (which holds `DATABASE_URL`, `GOOGLE_API_KEY`, etc.). Install the
+> [Infisical CLI](https://infisical.com/docs/cli/overview) and authenticate
+> before running any commands.
 
 ```bash
-cp .env.example .env
-# Fill in required values in .env
-
-docker compose up -d
+infisical login
+infisical run -- docker compose up -d
 ```
 
 Apply database migrations:
 
 ```bash
-docker compose exec api alembic upgrade head
+infisical run -- docker compose exec api alembic upgrade head
 ```
 
 Seed PSGC boundary data:
 
 ```bash
-docker compose exec api python -m storage.seed_psgc
+infisical run -- docker compose exec api python -m storage.seed_psgc
 ```
 
 Trigger a manual ingestion run (or use the Dagster UI at
 `http://localhost:3000`):
 
 ```bash
-docker compose exec dagster-daemon python -m ingestion.cli run
+infisical run -- docker compose exec dagster-daemon python -m ingestion.cli run
 ```
 
 The API is available at `http://localhost:8000`. Interactive docs at

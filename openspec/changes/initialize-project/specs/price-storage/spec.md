@@ -23,11 +23,12 @@ identifiers for region and city/municipality, rather than raw name strings.
 - **THEN** the system SHALL skip the insert and log a debug message, leaving the
   existing record unchanged (idempotent upsert)
 
-### Requirement: PSGC lookup table for location resolution
+### Requirement: PSGC lookup table with admin boundary geometries
 
 The system SHALL maintain a `psgc_boundaries` reference table mapping PSGC codes
-to canonical names, region hierarchy, and alternative name variants, to allow
-the extraction layer to resolve raw DOE location strings to PSGC codes.
+to canonical names, region hierarchy, alternative name variants, and admin
+boundary geometry (stored as WKT text), to allow location resolution now and
+spatial queries after a future PostGIS migration.
 
 #### Scenario: Raw location string resolved to PSGC code
 
@@ -43,6 +44,13 @@ the extraction layer to resolve raw DOE location strings to PSGC codes.
 - **THEN** the system SHALL store the record with a null `psgc_code`, store the
   raw string in a `raw_location` field, and flag the record for manual
   resolution
+
+#### Scenario: Boundary geometry present in seeded data
+
+- **WHEN** the `psgc_boundaries` table is seeded
+- **THEN** each row SHALL include a `geometry_wkt` column containing the
+  MultiPolygon boundary in WKT format (EPSG:4326), or NULL if no boundary data
+  is available for that administrative level
 
 ### Requirement: Track ingestion document metadata
 
