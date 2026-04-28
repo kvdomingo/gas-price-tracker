@@ -23,7 +23,7 @@
   `dagster-daemon`, `api`
 - [x] 2.3 Configure shared volume for PDF local storage (mounted into ingestion
   and API containers)
-- [ ] 2.4 Set up Infisical project and populate secrets for dev environment
+- [x] 2.4 Set up Infisical project and populate secrets for dev environment
   (DATABASE_URL, GEMINI_API_KEY, PDF_STORAGE_PATH, etc.)
 - [x] 2.5 Configure `infisical.json` (project ID + default environment) and
   document `infisical run --` usage in README
@@ -121,7 +121,7 @@
 - [x] 8.3 Configure weekly Dagster schedule (Friday) for the ingestion asset
 - [x] 8.4 Configure weekly partition definition starting from 2020-12-01 for
   backfill support
-- [ ] 8.5 Verify backfill can be triggered from Dagster UI for a sample date
+- [x] 8.5 Verify backfill can be triggered from Dagster UI for a sample date
   range
 
 ## 9. Testing
@@ -135,5 +135,5 @@
 - [x] 9.5 Write integration tests for end-to-end extraction pipeline using
   fixture PDFs (mock Gemini API responses)
 - [x] 9.6 Write API tests for all endpoints using a test database
-- [ ] 9.7 Run end-to-end pipeline against live DOE site for the most recent
+- [x] 9.7 Run end-to-end pipeline against live DOE site for the most recent
   publication and verify stored records match published prices

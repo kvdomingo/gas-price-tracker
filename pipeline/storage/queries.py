@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 def get_latest_prices_by_region(db: Session, region_psgc: str) -> list:
     """Return the most recent price record per fuel type for all cities in a region."""
-    from storage.models import PriceRecords  # type: ignore[attr-defined]
+    from pipeline.storage.models import PriceRecords  # type: ignore[attr-defined]
 
     subq = (
         select(

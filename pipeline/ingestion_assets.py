@@ -5,9 +5,13 @@ from dagster import AssetExecutionContext, WeeklyPartitionsDefinition, asset
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ingestion.downloader import download_publication, is_already_ingested
-from ingestion.robots import is_path_allowed
-from ingestion.scraper import DOE_BASE_URL, DOE_LISTING_PATH, discover_publications
+from pipeline.ingestion.downloader import download_publication, is_already_ingested
+from pipeline.ingestion.robots import is_path_allowed
+from pipeline.ingestion.scraper import (
+    DOE_BASE_URL,
+    DOE_LISTING_PATH,
+    discover_publications,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -5,8 +5,8 @@ from pathlib import Path
 
 from sqlalchemy.orm import Session
 
-from .http_client import polite_download
-from .scraper import PublicationLink
+from pipeline.ingestion.http_client import polite_download
+from pipeline.ingestion.scraper import PublicationLink
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ def _content_hash(path: Path) -> str:
 
 
 def is_already_ingested(db: Session, url: str) -> bool:
-    from storage.models import SourceDocuments
+    from pipeline.storage.models import SourceDocuments
 
     return (
         db.query(SourceDocuments).filter(SourceDocuments.url == url).first() is not None
@@ -35,7 +35,7 @@ def download_publication(
     storage_path: str,
 ) -> str | None:
     """Download a publication PDF and register it. Returns the document ID or None on failure."""
-    from storage.models import SourceDocuments
+    from pipeline.storage.models import SourceDocuments
 
     dest_dir = Path(storage_path)
     dest_dir.mkdir(parents=True, exist_ok=True)

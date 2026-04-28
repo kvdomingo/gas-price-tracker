@@ -17,7 +17,7 @@ Extract all price records and return them as a JSON array. Each object must have
 - fuel_type: string (e.g. "diesel", "gasoline", "kerosene", "lpg")
 - price_php_per_liter: number (retail pump price in PHP per litre)
 - location_string: string (city or municipality name as written in the document)
-- effective_date: string (ISO 8601 date, e.g. "2024-01-05")
+- effective_date: string (ISO 8601 date, e.g. "2026-01-05")
 
 Return ONLY valid JSON. If you cannot extract records, return an empty array [].
 """

@@ -4,10 +4,14 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
-from .gemini_client import PriceRecord, extract_from_image, extract_from_text
-from .ocr_extractor import extract_text_via_ocr
-from .pdf_detector import is_digital_pdf
-from .text_extractor import extract_text_from_pdf
+from pipeline.extraction.gemini_client import (
+    PriceRecord,
+    extract_from_image,
+    extract_from_text,
+)
+from pipeline.extraction.ocr_extractor import extract_text_via_ocr
+from pipeline.extraction.pdf_detector import is_digital_pdf
+from pipeline.extraction.text_extractor import extract_text_from_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +20,7 @@ _PRICE_MAX = 500.0
 
 
 def _get_cached_result(db: Session, content_hash: str) -> list[PriceRecord] | None:
-    from storage.models import RawExtractionResults, SourceDocuments
+    from pipeline.storage.models import RawExtractionResults, SourceDocuments
 
     doc = (
         db.query(SourceDocuments)
@@ -52,7 +56,7 @@ def _get_cached_result(db: Session, content_hash: str) -> list[PriceRecord] | No
 
 
 def _write_raw_output(db: Session, doc_id: str, records: list[PriceRecord]) -> None:
-    from storage.models import RawExtractionResults
+    from pipeline.storage.models import RawExtractionResults
 
     serializable = [
         {
@@ -93,7 +97,7 @@ def _validate(
 def extract_document(
     db: Session, doc_id: str, pdf_path: str, content_hash: str
 ) -> list[PriceRecord]:
-    from storage.models import SourceDocuments
+    from pipeline.storage.models import SourceDocuments
 
     cached = _get_cached_result(db, content_hash)
     if cached is not None:

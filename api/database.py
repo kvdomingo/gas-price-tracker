@@ -3,9 +3,11 @@ from typing import AsyncGenerator
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from api.settings import settings
+from common.settings import settings
 
-_engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
+_engine = create_async_engine(
+    settings.DATABASE_URL.encoded_string(), pool_pre_ping=True
+)
 _SessionLocal = async_sessionmaker(bind=_engine, autoflush=False, autocommit=False)
 
 

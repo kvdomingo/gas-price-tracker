@@ -2,7 +2,7 @@ import subprocess
 
 from dagster import AssetExecutionContext, asset
 
-from .dbt_assets import gas_price_tracker_dbt_assets
+from pipeline.dbt_assets import gas_price_tracker_dbt_assets
 
 
 @asset(deps=[gas_price_tracker_dbt_assets], group_name="codegen")

@@ -5,8 +5,8 @@ from dagster import AssetExecutionContext, asset
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from extraction.pipeline import extract_document
-from .ingestion_assets import doe_publications
+from pipeline.extraction.pipeline import extract_document
+from pipeline.ingestion_assets import doe_publications
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def extracted_price_records(context: AssetExecutionContext) -> None:
     Session = sessionmaker(bind=engine)
 
     with Session() as db:
-        from storage.models import SourceDocuments
+        from pipeline.storage.models import SourceDocuments
 
         pending = (
             db.query(SourceDocuments)

@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from api.settings import settings
+from common.settings import settings
 
 _bearer = HTTPBearer(auto_error=False)
 

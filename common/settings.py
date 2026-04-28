@@ -1,11 +1,13 @@
 from functools import lru_cache
+from pathlib import Path
 
-from pydantic import field_validator
+from pydantic import PostgresDsn, field_validator
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str
+    BASE_DIR: Path = Path(__file__).resolve().parent.parent
+    DATABASE_URL: PostgresDsn
     AUTH_ENABLED: bool = False
     API_KEYS: list[str] = []
 

@@ -36,11 +36,11 @@ services:
       <<: *common-env
     command:
       - -c
-      - exec uv run dg dev -p 3030 -h 0.0.0.0 -w dagster_pipeline/workspace.yaml
+      - exec uv run dg dev -p 3030 -h 0.0.0.0 -w pipeline/workspace.yaml
     volumes:
       - pdf-data:/app/data/pdfs
       - venv-data:/app/.venv
-      - ./dagster_pipeline/dagster.yaml:/opt/dagster/dagster.yaml
+      - ./pipeline/dagster.yaml:/opt/dagster/dagster.yaml
       - .:/app
     ports:
       - "3030:3030"

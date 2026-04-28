@@ -1,7 +1,7 @@
 from urllib.parse import urljoin, urlparse
 from urllib.robotparser import RobotFileParser
 
-from .http_client import polite_get
+from pipeline.ingestion.http_client import polite_get
 
 USER_AGENT = "gas-price-tracker/1.0"
 

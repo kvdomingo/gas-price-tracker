@@ -3,7 +3,7 @@ from datetime import date
 
 from bs4 import BeautifulSoup
 
-from .http_client import polite_get
+from pipeline.ingestion.http_client import polite_get
 
 DOE_BASE_URL = "https://doe.gov.ph"
 DOE_LISTING_PATH = "/articles/group/liquid-fuels"
