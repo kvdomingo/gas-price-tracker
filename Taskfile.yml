@@ -1,9 +1,12 @@
 version: "3"
 
+env:
+  INFISICAL_DOMAIN: https://infisical.lab.kvd.studio
+  INFISICAL_PROJECT_ID: 9fca5608-af8d-4a72-ad49-f69eb2e2b7cb
+
 tasks:
   default:
-    cmd:
-      task: up
+    cmd: infisical run -- task up
 
   setup:
     desc: Setup the project
@@ -15,7 +18,13 @@ tasks:
   up:
     desc: Build and start containers
     interactive: true
-    cmd: infisical run -- docker compose up --build --remove-orphans
+    env:
+      INFISICAL_TOKEN:
+        sh: infisical login --method=universal-auth
+          --client-id="{{.INFISICAL_CLIENT_ID}}"
+          --client-secret="{{.INFISICAL_CLIENT_SECRET}}"
+          --domain="{{.INFISICAL_DOMAIN}}" --plain --silent
+    cmd: docker compose up --build --remove-orphans
 
   stop:
     desc: Stop containers

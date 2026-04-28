@@ -4,9 +4,10 @@ volumes:
   venv-data:
 
 x-common-env: &common-env
-  DATABASE_URL: postgresql://gas_price_tracker:gas_price_tracker@db:5432/gas_price_tracker
+  INFISICAL_TOKEN: ${INFISICAL_TOKEN}
+  INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID}
+  INFISICAL_DOMAIN: ${INFISICAL_DOMAIN}
   PDF_STORAGE_PATH: /app/data/pdfs
-  GEMINI_API_KEY: ${GEMINI_API_KEY}
   DAGSTER_HOME: /opt/dagster
   POSTGRES_DB: gas_price_tracker
   POSTGRES_USER: gas_price_tracker
@@ -36,12 +37,23 @@ services:
       <<: *common-env
     command:
       - -c
-      - exec uv run dg dev -p 3030 -h 0.0.0.0 -w pipeline/workspace.yaml
+      - >
+        exec infisical run
+        --token $$INFISICAL_TOKEN
+        --projectId $$INFISICAL_PROJECT_ID
+        --env dev
+        --domain $$INFISICAL_DOMAIN
+        --
+        uv run dg dev
+        -p 3030
+        -h 0.0.0.0
+        -w pipeline/workspace.yaml
     volumes:
       - pdf-data:/app/data/pdfs
       - venv-data:/app/.venv
       - ./pipeline/dagster.yaml:/opt/dagster/dagster.yaml
       - .:/app
+      - ${HOME}/.config/gcloud:/root/.config/gcloud:ro
     ports:
       - "3030:3030"
     depends_on:
@@ -57,9 +69,18 @@ services:
       <<: *common-env
     command:
       - -c
-      - |
-        uv sync --frozen --dev
-        exec uv run fastapi dev --host 0.0.0.0 --port 8000 api/main.py
+      - >
+        uv sync --frozen --dev;
+        exec infisical run
+        --token $$INFISICAL_TOKEN
+        --projectId $$INFISICAL_PROJECT_ID
+        --env dev
+        --domain $$INFISICAL_DOMAIN
+        --
+        uv run fastapi dev
+        --host 0.0.0.0
+        --port 8000
+        api/main.py
     volumes:
       - pdf-data:/app/data/pdfs
       - venv-data:/app/.venv

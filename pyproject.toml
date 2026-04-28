@@ -22,6 +22,11 @@ dependencies = [
     "sqlacodegen>=3.0",
     "dagster-postgres>=0.29.1",
     "asyncpg>=0.31.0",
+    "scrapling[all,fetchers]>=0.4.7",
+    "httpx>=0.28.1",
+    "aiofiles>=25.1.0",
+    "langchain>=1.2.15",
+    "langchain-google-genai>=4.2.2",
 ]
 
 [dependency-groups]
@@ -32,6 +37,9 @@ dev = [
     "ruff>=0.15.11",
     "ty>=0.0.31",
     "dagster-dg-cli>=1.13.1",
+    "jupyter>=1.1.1",
+    "notebook>=7.5.5",
+    "dotenv>=0.9.9",
 ]
 
 [tool.ruff]
