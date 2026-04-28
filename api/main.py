@@ -5,23 +5,23 @@ from fastapi import Depends, FastAPI, HTTPException, Query, status
 from scalar_fastapi import get_scalar_api_reference
 from sqlalchemy.orm import Session
 
-from .auth import verify_auth
-from .database import check_db_connection, get_db
-from .schemas import ErrorResponse, HealthResponse, PriceRecordResponse
+from api.auth import verify_auth
+from api.database import check_db_connection, get_db
+from api.schemas import ErrorResponse, HealthResponse, PriceRecordResponse
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    from .database import _engine  # noqa: F401
+async def lifespan(_: FastAPI):
+    from api.database import _engine
 
     yield
-    _engine.dispose()
+    await _engine.dispose()
 
 
 app = FastAPI(
     title="PH Fuel Price Tracker API",
     description="Query weekly retail fuel pump prices from the Philippine Department of Energy.",
-    version="1.0.0",
+    version="0.1.0",
     docs_url=None,
     redoc_url=None,
     lifespan=lifespan,
@@ -35,9 +35,9 @@ async def scalar_docs():
     )
 
 
-@app.get("/health", response_model=HealthResponse, tags=["ops"])
+@app.get("/health", response_model=HealthResponse, tags=["core"])
 async def health() -> HealthResponse:
-    if check_db_connection():
+    if await check_db_connection():
         return HealthResponse(status="ok")
     return HealthResponse(status="degraded", detail="Database unreachable")
 

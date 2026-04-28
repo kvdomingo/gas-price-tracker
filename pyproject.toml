@@ -21,6 +21,7 @@ dependencies = [
     "sqlalchemy>=2.0",
     "sqlacodegen>=3.0",
     "dagster-postgres>=0.29.1",
+    "asyncpg>=0.31.0",
 ]
 
 [dependency-groups]

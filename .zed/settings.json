@@ -1,0 +1,21 @@
+{
+  "languages": {
+    "Python": {
+      "language_servers": ["ty", "!basedpyright", "..."],
+      "code_actions_on_format": {
+        "source.fixAll.ruff": true,
+        "source.organizeImports.ruff": true
+      }
+    },
+    "JSON": {
+      "prettier": {
+        "allowed": true
+      }
+    },
+    "JSONC": {
+      "prettier": {
+        "allowed": true
+      }
+    }
+  }
+}
