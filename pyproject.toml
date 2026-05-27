@@ -29,6 +29,7 @@ dependencies = [
     "langchain-google-genai>=4.2.2",
     "polars>=1.40.1",
     "loguru>=0.7.3",
+    "dagster-aws>=0.29.6",
 ]
 
 [dependency-groups]

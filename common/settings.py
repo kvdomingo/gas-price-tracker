@@ -1,8 +1,7 @@
-from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import PostgresDsn
+from pydantic import HttpUrl, PostgresDsn, SecretStr
 from pydantic_settings import BaseSettings
 
 
@@ -13,10 +12,19 @@ class Settings(BaseSettings):
     AUTH_ENABLED: bool = False
     API_KEYS: list[str] = []
 
+    DOE_LISTING_BASE_URL: str = "doe.gov.ph"
+    DOE_LISTING_BASE_PATH: str = "articles/group/liquid-fuels"
+    DOE_LISTING_BASE_PARAMS: dict[str, str] = {
+        "maincat": "Retail Pump Prices",
+        "subcategory": "NCR Pump Prices",
+        "display_type": "Card",
+    }
+    DOE_PDF_BASE_URL: str = "prod-cms.doe.gov.ph"
+    DOE_PDF_BASE_PATH: str = "documents/d"
 
-@lru_cache
-def _get_settings() -> Settings:
-    return Settings()  # ty:ignore[missing-argument]
+    MINIO_ENDPOINT_URL: HttpUrl
+    MINIO_ACCESS_KEY: SecretStr
+    MINIO_SECRET_KEY: SecretStr
 
 
-settings = _get_settings()
+settings = Settings()  # ty:ignore[missing-argument]
