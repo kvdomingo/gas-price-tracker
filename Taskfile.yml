@@ -13,7 +13,7 @@ tasks:
     cmds:
       - prek install
       - uv sync --dev
-      - cd dbt && uv run dbt deps && cd ..
+      - cd pipeline/dbt && uv run dbt deps && cd ..
 
   up:
     desc: Build and start containers
@@ -55,4 +55,4 @@ tasks:
     desc: Attach to the db container and run pgcli
     interactive: true
     cmd: pgcli
-      postgresql://gas_price_tracker:gas_price_tracker@db:5432/gas_price_tracker
+      postgresql://gas_price_tracker:gas_price_tracker@localhost:5432/gas_price_tracker

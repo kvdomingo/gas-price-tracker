@@ -9,9 +9,6 @@ x-common-env: &common-env
   INFISICAL_DOMAIN: ${INFISICAL_DOMAIN}
   PDF_STORAGE_PATH: /app/data/pdfs
   DAGSTER_HOME: /opt/dagster
-  POSTGRES_DB: gas_price_tracker
-  POSTGRES_USER: gas_price_tracker
-  POSTGRES_PASSWORD: gas_price_tracker
   POSTGRES_HOST: db
   POSTGRES_PORT: 5432
 
@@ -20,8 +17,12 @@ services:
     image: ghcr.io/kvdomingo/postgresql-pig:18
     environment:
       <<: *common-env
+      POSTGRES_DB: gas_price_tracker
+      POSTGRES_USER: gas_price_tracker
+      POSTGRES_PASSWORD: gas_price_tracker
     volumes:
       - db-data:/var/lib/postgresql
+      - ./initdb:/docker-entrypoint-initdb.d:ro
     ports:
       - "5432:5432"
     healthcheck:
@@ -35,6 +36,9 @@ services:
     image: ghcr.io/kvdomingo/gas-price-tracker:latest
     environment:
       <<: *common-env
+      POSTGRES_DB: dagster
+      POSTGRES_USER: dagster
+      POSTGRES_PASSWORD: dagster
     command:
       - -c
       - >
@@ -67,6 +71,9 @@ services:
     image: ghcr.io/kvdomingo/gas-price-tracker:latest
     environment:
       <<: *common-env
+      POSTGRES_DB: gas_price_tracker
+      POSTGRES_USER: gas_price_tracker
+      POSTGRES_PASSWORD: gas_price_tracker
     command:
       - -c
       - >

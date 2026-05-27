@@ -6,7 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from common.settings import settings
 
 _engine = create_async_engine(
-    settings.DATABASE_URL.encoded_string(), pool_pre_ping=True
+    settings.DATABASE_URL.encoded_string().replace(
+        "postgresql://", "postgresql+asyncpg://"
+    ),
+    pool_pre_ping=True,
 )
 _SessionLocal = async_sessionmaker(bind=_engine, autoflush=False, autocommit=False)
 

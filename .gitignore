@@ -181,6 +181,7 @@ pyrightconfig.json
 dbt/target/
 dbt/dbt_packages/
 dbt/logs/
+logs/
 .user.yml
 
 # local data

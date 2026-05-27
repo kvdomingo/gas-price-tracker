@@ -27,6 +27,8 @@ dependencies = [
     "aiofiles>=25.1.0",
     "langchain>=1.2.15",
     "langchain-google-genai>=4.2.2",
+    "polars>=1.40.1",
+    "loguru>=0.7.3",
 ]
 
 [dependency-groups]
