@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     MINIO_ENDPOINT_URL: HttpUrl
     MINIO_ACCESS_KEY: SecretStr
     MINIO_SECRET_KEY: SecretStr
+    MINIO_BUCKET: str
 
 
 settings = Settings()  # ty:ignore[missing-argument]
